@@ -34,6 +34,7 @@ import jakarta.json.stream.JsonGenerator;
 public abstract class ASType {
     public static final String CONTEXT_VALUE = "https://www.w3.org/ns/activitystreams";
     protected URI id;
+    protected String name;
     private JsonWriterFactory writerFactory;
 
     public ASType() {
@@ -60,6 +61,25 @@ public abstract class ASType {
     }
 
     /**
+     * Returns the human-readable name of this object.
+     * 
+     * @return the name of the object.
+     * @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-name">Vocabulary#name</a>
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the name of the object.
+     * 
+     * @param name Name of the object.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    /**
      * Returns the type of the object.
      * 
      * @return Object's type.
@@ -71,7 +91,11 @@ public abstract class ASType {
      * 
      * @return Object in JSON format
      */
-    public abstract String toJson();
+    public String toJson() {
+        return writeJsonObject(toJsonObject());
+    }
+
+    public abstract JsonObject toJsonObject();
 
     protected String writeJsonObject(JsonObject object) {
         StringWriter strWriter = new StringWriter();
@@ -79,5 +103,4 @@ public abstract class ASType {
         writer.writeObject(object);
         return strWriter.toString();
     }
-
 }

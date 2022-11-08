@@ -14,13 +14,15 @@
 
 package dev.jfed.activitystreams.model;
 
-public final class ASProperties {
-    public static final String HEIGHT = "height";
-    public static final String HREF = "href";
-    public static final String HREFLANG = "hreflang";
-    public static final String MEDIA_TYPE = "mediaType";
-    public static final String NAME = "name";
-    public static final String PREVIEW = "preview";
-    public static final String REL = "rel";
-    public static final String WIDTH = "width";
+import java.util.HashMap;
+import java.util.Locale;
+
+public class LanguageMap extends HashMap<String, String> {
+    public String getDefaulString() {
+        return get(Locale.getDefault());
+    }
+
+    public String get(Locale locale) {
+        return this.get(locale.getLanguage());
+    }    
 }
