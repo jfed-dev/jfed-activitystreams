@@ -22,5 +22,6 @@ public final class ASProperties {
     public static final String NAME = "name";
     public static final String PREVIEW = "preview";
     public static final String REL = "rel";
+    public static final String TYPE = "type";
     public static final String WIDTH = "width";
 }

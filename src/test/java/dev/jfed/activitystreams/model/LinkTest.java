@@ -14,14 +14,25 @@
 
 package dev.jfed.activitystreams.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.apicatalog.jsonld.document.JsonDocument;
+
+import jakarta.json.JsonObject;
 
 class LinkTest {
+    private static final Logger log = LoggerFactory.getLogger(LinkTest.class);
+
     private static final String TEST_HREF = "http://example.org/abc.png";
     private static final String TEST_REL = "canonical";
     private static final String TEST_MEDIA_TYPE = "image/png";
@@ -37,7 +48,7 @@ class LinkTest {
 
         assertNotNull(result);
         JSONAssert.assertEquals("{@context: \"https://www.w3.org/ns/activitystreams\"}", result, false);
-        JSONAssert.assertEquals("{@type: \"Link\"}", result, false);
+        JSONAssert.assertEquals("{type: \"Link\"}", result, false);
         JSONAssert.assertEquals("{href:\"" + TEST_HREF + "\"}", result, false);
     }
 
@@ -52,12 +63,33 @@ class LinkTest {
             .width(TEST_WIDTH)
             .build();
         String result = link.toJson();
-
+        
         assertNotNull(result);
         JSONAssert.assertEquals("{rel: \"canonical\"}", result, false);
         JSONAssert.assertEquals("{mediaType: \"" + TEST_MEDIA_TYPE + "\"}", result, false);
         JSONAssert.assertEquals("{hreflang: \"" + TEST_HREFLANG + "\"}", result, false);
         JSONAssert.assertEquals("{height: " + TEST_HEIGHT + "}", result, false);
         JSONAssert.assertEquals("{width: " + TEST_WIDTH + "}", result, false);
+
+        log.atInfo().setMessage("test json: {}").addArgument(result).log();
+    }
+
+    @Test
+    public void testFromJson() throws Exception {
+
+        JsonDocument document = JsonDocument.of(getClass().getClassLoader().getResourceAsStream("test/vocabulary-ex2-jsonld.json"));
+        assertNotNull(document);
+        assertFalse(document.getJsonContent().isEmpty());
+        JsonObject object = document.getJsonContent().get().asJsonObject();
+        assertNotNull(object);
+        Optional<Link> result = Link.fromJsonObject(object);
+        assertFalse(result.isEmpty());
+        Link testLink = result.get();
+        assertEquals("http://example.org/abc", testLink.getHref().toString());
+        assertEquals("An example link", testLink.getRel());
+        assertEquals("text/html", testLink.getMediaType());
+        assertEquals("en", testLink.getHreflang());
+
+        log.atInfo().setMessage("test Link: {}").addArgument(testLink).log();
     }
 }
