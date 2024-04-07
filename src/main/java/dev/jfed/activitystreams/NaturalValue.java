@@ -38,11 +38,6 @@ public class NaturalValue {
         return new NaturalValueBuilder(Objects.requireNonNull(locale));
     }
 
-    private NaturalValue(Locale locale) {
-        this.locale = locale;
-        this._map = new HashMap<>();
-    }
-
     public static class NaturalValueBuilder {
         private NaturalValue _value;
 
@@ -63,6 +58,11 @@ public class NaturalValue {
         public NaturalValue build() {
             return _value;
         }
+    }
+
+    private NaturalValue(Locale locale) {
+        this.locale = locale;
+        this._map = new HashMap<>();
     }
 
     public String getValue() {
@@ -103,6 +103,6 @@ public class NaturalValue {
 
     @Override
     public String toString() {
-        return getValue();
+        return "[NaturalValue: " + _map + "]";
     }
 }

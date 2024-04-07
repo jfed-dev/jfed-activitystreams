@@ -18,6 +18,7 @@ public final class ASProperties {
     public static final String HEIGHT = "height";
     public static final String HREF = "href";
     public static final String HREFLANG = "hreflang";
+    public static final String ID = "id";
     public static final String MEDIA_TYPE = "mediaType";
     public static final String NAME = "name";
     public static final String NAME_MAP = "nameMap";

@@ -91,7 +91,7 @@ class LinkTest {
         assertFalse(result.isEmpty());
         Link testLink = result.get();
         assertEquals("http://example.org/abc", testLink.getHref().toString());
-        assertEquals("An example link", testLink.getName().toString());
+        assertEquals("An example link", testLink.getName().getValue());
         assertEquals("text/html", testLink.getMediaType());
         assertEquals("en", testLink.getHreflang());
 

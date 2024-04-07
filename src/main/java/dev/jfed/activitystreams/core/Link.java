@@ -15,14 +15,13 @@
 package dev.jfed.activitystreams.core;
 
 import java.net.URI;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import dev.jfed.activitystreams.JsonUtils;
 import dev.jfed.activitystreams.NaturalValue;
 import dev.jfed.activitystreams.ASProperties;
 import dev.jfed.activitystreams.ASType;
-import jakarta.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,16 +146,15 @@ public class Link extends ASType {
     
     @Override
     public String toString() {
-        String builder = "[Link: {" + "href=" + href.toString() + ", " +
+        return "[Link: {href=" + href.toString() + ", " +
                 "rel=" + rel + ", " +
                 "mediaType=" + mediaType + ", " +
                 "hreflang=" + hreflang + ", " +
+                "name=" + name + ", " +
                 "height=" + height + ", " +
                 "width=" + width + ", " +
                 "preview=" + preview +
                 "}]";
-        
-        return builder;
     }
 
     @Override
@@ -165,7 +163,7 @@ public class Link extends ASType {
             .add(Keywords.CONTEXT, CONTEXT_VALUE)
             .add(ASProperties.TYPE, getType())
             .add(ASProperties.HREF, href.toString());
-        mapNameToJsonObject(builder);
+        JsonUtils.mapNameToJsonObject(builder, name);
 
         Optional.ofNullable(rel).map(r -> builder.add(ASProperties.REL, r));
         Optional.ofNullable(mediaType).map(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
@@ -217,20 +215,6 @@ public class Link extends ASType {
                 break;
             default:
                 log.atWarn().setMessage("Property not found: key={}, value={}").addArgument(property.getKey()).addArgument(property.getValue()).log();
-        }
-    }
-
-    private void mapNameToJsonObject(JsonObjectBuilder parent) {
-        if (name != null) {
-            if (name.hasMultipleLanguages()) {
-                final var builder = Json.createObjectBuilder();
-                for (Map.Entry<Locale, String> entry : name.getAllValues()) {
-                    builder.add(entry.getKey().getLanguage(), entry.getValue());
-                }
-                parent.add(ASProperties.NAME_MAP, builder);
-            } else {
-                parent.add(ASProperties.NAME, name.getValue());
-            }
         }
     }
 }
