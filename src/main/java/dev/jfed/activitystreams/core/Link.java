@@ -1,23 +1,28 @@
-// Copyright 2022 Guillermo Castro
-// 
+// Copyright 2022-2024 Guillermo Castro
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dev.jfed.activitystreams.model;
+package dev.jfed.activitystreams.core;
 
 import java.net.URI;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import dev.jfed.activitystreams.NaturalValue;
+import dev.jfed.activitystreams.ASProperties;
+import dev.jfed.activitystreams.ASType;
+import jakarta.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +60,7 @@ public class Link extends ASType {
     public static class LinkBuilder {
         private final URI href;
         private String rel;
-        private String name;
+        private NaturalValue name;
         private String mediaType;
         private String hreflang;
         private Integer height;
@@ -76,7 +81,7 @@ public class Link extends ASType {
             return this;
         }
 
-        public LinkBuilder name(String name) {
+        public LinkBuilder name(NaturalValue name) {
             this.name = name;
             return this;
         }
@@ -142,16 +147,16 @@ public class Link extends ASType {
     
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("[Link: {");
-        builder.append("href=").append(href.toString()).append(", ");
-        builder.append("rel=").append(rel).append(", ");
-        builder.append("mediaType=").append(mediaType).append(", ");
-        builder.append("hreflang=").append(hreflang).append(", ");
-        builder.append("height=").append(height).append(", ");
-        builder.append("width=").append(width).append(", ");
-        builder.append("preview=").append(preview);
+        String builder = "[Link: {" + "href=" + href.toString() + ", " +
+                "rel=" + rel + ", " +
+                "mediaType=" + mediaType + ", " +
+                "hreflang=" + hreflang + ", " +
+                "height=" + height + ", " +
+                "width=" + width + ", " +
+                "preview=" + preview +
+                "}]";
         
-        return builder.append("}]").toString();
+        return builder;
     }
 
     @Override
@@ -160,6 +165,7 @@ public class Link extends ASType {
             .add(Keywords.CONTEXT, CONTEXT_VALUE)
             .add(ASProperties.TYPE, getType())
             .add(ASProperties.HREF, href.toString());
+        mapNameToJsonObject(builder);
 
         Optional.ofNullable(rel).map(r -> builder.add(ASProperties.REL, r));
         Optional.ofNullable(mediaType).map(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
@@ -192,7 +198,8 @@ public class Link extends ASType {
                 // ignore
                 break;
             case ASProperties.NAME:
-                builder.name(value);
+                builder.name(NaturalValue.builder().withValue(value).build());
+                break;
             case ASProperties.REL:
                 builder.rel(value);
                 break;
@@ -203,13 +210,27 @@ public class Link extends ASType {
                 builder.hreflang(value);
                 break;
             case ASProperties.HEIGHT:
-                builder.height(Integer.valueOf(value));
+                builder.height(Integer.parseInt(value));
                 break;
             case ASProperties.WIDTH:
-                builder.width(Integer.valueOf(value));
+                builder.width(Integer.parseInt(value));
                 break;
             default:
                 log.atWarn().setMessage("Property not found: key={}, value={}").addArgument(property.getKey()).addArgument(property.getValue()).log();
+        }
+    }
+
+    private void mapNameToJsonObject(JsonObjectBuilder parent) {
+        if (name != null) {
+            if (name.hasMultipleLanguages()) {
+                final var builder = Json.createObjectBuilder();
+                for (Map.Entry<Locale, String> entry : name.getAllValues()) {
+                    builder.add(entry.getKey().getLanguage(), entry.getValue());
+                }
+                parent.add(ASProperties.NAME_MAP, builder);
+            } else {
+                parent.add(ASProperties.NAME, name.getValue());
+            }
         }
     }
 }
