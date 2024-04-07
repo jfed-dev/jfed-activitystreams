@@ -1,16 +1,18 @@
-// Copyright 2024 Guillermo Castro
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2024 Guillermo Castro
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package dev.jfed.activitystreams.core;
 
@@ -52,25 +54,25 @@ public class ASObject extends ASType {
         return new ASObjectBuilder();
     }
 
-    static class ASObjectBuilder {
-        private final ASObject _object;
+    public static class ASObjectBuilder {
+        private final ASObject asObject;
 
         ASObjectBuilder() {
-            _object = new ASObject();
+            asObject = new ASObject();
         }
 
         public ASObjectBuilder withName(NaturalValue name) {
-            _object.name = name;
+            asObject.name = name;
             return this;
         }
 
         public ASObjectBuilder withId(URI id) {
-            _object.setId(id);
+            asObject.setId(id);
             return this;
         }
 
         public ASObject build() {
-            return _object;
+            return asObject;
         }
     }
 
@@ -85,7 +87,7 @@ public class ASObject extends ASType {
     public JsonObject toJsonObject() {
         final var builder = Json.createObjectBuilder()
                 .add(Keywords.CONTEXT, CONTEXT_VALUE);
-        Optional.ofNullable(id).map(i -> builder.add(ASProperties.ID, i.toString()));
+        Optional.ofNullable(id).ifPresent(i -> builder.add(ASProperties.ID, i.toString()));
         builder.add(ASProperties.TYPE, getType());
 
         JsonUtils.mapNameToJsonObject(builder, name);
@@ -103,13 +105,10 @@ public class ASObject extends ASType {
     private static void processEntry(final ASObjectBuilder builder, final Map.Entry<String, JsonValue> property) {
         JsonValue value = property.getValue();
         switch (property.getKey()) {
-            case Keywords.CONTEXT:
-            case Keywords.TYPE:
-            case ASProperties.TYPE:
+            case Keywords.CONTEXT, Keywords.TYPE, ASProperties.TYPE:
                 // ignore
                 break;
-            case Keywords.ID:
-            case ASProperties.ID:
+            case Keywords.ID, ASProperties.ID:
                 builder.withId(URI.create(((JsonString)value).getString()));
                 break;
             case ASProperties.NAME:

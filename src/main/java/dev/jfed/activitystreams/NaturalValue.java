@@ -1,16 +1,18 @@
-// Copyright 2022-2024 Guillermo Castro
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2022-2024 Guillermo Castro
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.jfed.activitystreams;
 
 import java.util.HashMap;
@@ -28,7 +30,7 @@ import java.util.Set;
  */
 public class NaturalValue {
     private final Locale locale;
-    private final Map<Locale, String> _map;
+    private final Map<Locale, String> valueMap;
 
     public static NaturalValueBuilder builder() {
         return new NaturalValueBuilder(Locale.getDefault());
@@ -39,30 +41,30 @@ public class NaturalValue {
     }
 
     public static class NaturalValueBuilder {
-        private NaturalValue _value;
+        private NaturalValue value;
 
         private NaturalValueBuilder(Locale locale) {
-            _value = new NaturalValue(locale);
+            value = new NaturalValue(locale);
         }
 
         public NaturalValueBuilder withValue(String language, String value) {
-            _value.setValue(language, value);
+            this.value.setValue(language, value);
             return this;
         }
 
         public NaturalValueBuilder withValue(String value) {
-            _value.setValue(value);
+            this.value.setValue(value);
             return this;
         }
 
         public NaturalValue build() {
-            return _value;
+            return value;
         }
     }
 
     private NaturalValue(Locale locale) {
         this.locale = locale;
-        this._map = new HashMap<>();
+        this.valueMap = new HashMap<>();
     }
 
     public String getValue() {
@@ -74,7 +76,7 @@ public class NaturalValue {
     }
 
     public String getValue(Locale locale) {
-        return _map.get(locale);
+        return valueMap.get(locale);
     }
 
     public void setValue(String value) {
@@ -86,23 +88,23 @@ public class NaturalValue {
     }
 
     public void setValue(Locale locale, String text) {
-        _map.put(locale, text);
+        valueMap.put(locale, text);
     }
 
     public boolean hasValueForLanguage(Locale locale) {
-        return _map.containsKey(locale);
+        return valueMap.containsKey(locale);
     }
 
     public boolean hasMultipleLanguages() {
-        return _map.size() > 1;
+        return valueMap.size() > 1;
     }
 
     public Set<Map.Entry<Locale, String>> getAllValues() {
-        return _map.entrySet();
+        return valueMap.entrySet();
     }
 
     @Override
     public String toString() {
-        return "[NaturalValue: " + _map + "]";
+        return "[NaturalValue: " + valueMap + "]";
     }
 }

@@ -1,16 +1,18 @@
-// Copyright 2022-2024 Guillermo Castro
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2022-2024 Guillermo Castro
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package dev.jfed.activitystreams.core;
 
@@ -165,12 +167,12 @@ public class Link extends ASType {
             .add(ASProperties.HREF, href.toString());
         JsonUtils.mapNameToJsonObject(builder, name);
 
-        Optional.ofNullable(rel).map(r -> builder.add(ASProperties.REL, r));
-        Optional.ofNullable(mediaType).map(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
-        Optional.ofNullable(hreflang).map(hl -> builder.add(ASProperties.HREFLANG, hl));
-        Optional.ofNullable(height).map(h -> builder.add(ASProperties.HEIGHT, h));
-        Optional.ofNullable(width).map(w -> builder.add(ASProperties.WIDTH, w));
-        Optional.ofNullable(preview).map(p -> builder.add(ASProperties.PREVIEW, p.toJsonObject()));
+        Optional.ofNullable(rel).ifPresent(r -> builder.add(ASProperties.REL, r));
+        Optional.ofNullable(mediaType).ifPresent(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
+        Optional.ofNullable(hreflang).ifPresent(hl -> builder.add(ASProperties.HREFLANG, hl));
+        Optional.ofNullable(height).ifPresent(h -> builder.add(ASProperties.HEIGHT, h));
+        Optional.ofNullable(width).ifPresent(w -> builder.add(ASProperties.WIDTH, w));
+        Optional.ofNullable(preview).ifPresent(p -> builder.add(ASProperties.PREVIEW, p.toJsonObject()));
         
         return builder.build();
     }
@@ -189,10 +191,7 @@ public class Link extends ASType {
     private static void processEntry(final LinkBuilder builder, final Map.Entry<String, JsonValue> property) {
         String value = ((JsonString)property.getValue()).getString();
         switch(property.getKey()) {
-            case Keywords.CONTEXT:
-            case Keywords.TYPE:
-            case ASProperties.TYPE:
-            case ASProperties.HREF:
+            case Keywords.CONTEXT, Keywords.TYPE, ASProperties.TYPE, ASProperties.HREF:
                 // ignore
                 break;
             case ASProperties.NAME:
