@@ -63,8 +63,10 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>jfed-dev</sonar.organization>
     <sonar.projectKey>jfed-dev_jfed-activitystreams</sonar.projectKey>
+    <sonar.java.source>17</sonar.java.source>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-    <sonar.junit.reportPaths>target/surefire-reports/TEST-**.xml</sonar.junit.reportPaths>
+    <sonar.junit.reportPaths>target/surefire-reports/TEST-*.xml</sonar.junit.reportPaths>
+    <sonar.tests>src/test/java</sonar.tests>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
