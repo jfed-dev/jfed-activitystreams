@@ -29,11 +29,12 @@ import java.util.Set;
  * @see <a href="https://www.w3.org/TR/activitystreams-core/#naturalLanguageValues">AS2#naturalLanguageValues</a>
  */
 public class NaturalValue {
+    public static final String UNDEFINED = "und";
     private final Locale locale;
     private final Map<Locale, String> valueMap;
 
     public static NaturalValueBuilder builder() {
-        return new NaturalValueBuilder(Locale.getDefault());
+        return new NaturalValueBuilder(Locale.ROOT);
     }
 
     public static NaturalValueBuilder builder(Locale locale) {
@@ -72,7 +73,7 @@ public class NaturalValue {
     }
 
     public String getValue(String language) {
-        return getValue(Locale.forLanguageTag(language));
+        return getValue(UNDEFINED.equalsIgnoreCase(language) ? Locale.ROOT : Locale.forLanguageTag(language));
     }
 
     public String getValue(Locale locale) {
@@ -84,11 +85,15 @@ public class NaturalValue {
     }
 
     public void setValue(String language, String text) {
-        setValue(Locale.forLanguageTag(language), text);
+        setValue(UNDEFINED.equalsIgnoreCase(language) ? Locale.ROOT : Locale.forLanguageTag(language), text);
     }
 
     public void setValue(Locale locale, String text) {
         valueMap.put(locale, text);
+    }
+
+    public Locale getLocale() {
+        return locale;
     }
 
     public boolean hasValueForLanguage(Locale locale) {

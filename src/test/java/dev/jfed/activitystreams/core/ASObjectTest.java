@@ -14,9 +14,9 @@
 
 package dev.jfed.activitystreams.core;
 
-import com.apicatalog.jsonld.document.JsonDocument;
+import com.apicatalog.jsonld.JsonLdError;
+import dev.jfed.activitystreams.JsonTestUtil;
 import dev.jfed.activitystreams.NaturalValue;
-import jakarta.json.JsonObject;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -39,6 +39,7 @@ class ASObjectTest {
 
     private static final String TEST_ID = "https://test.example.com/object/1";
     private static final String TEST_NAME = "Test Object";
+    private static final String TEST_NAME_ES = "Objeto de Prueba";
 
     @Test
     void testMinimal() throws JSONException {
@@ -59,24 +60,34 @@ class ASObjectTest {
         var result = obj.toJson();
 
         assertNotNull(result);
+        log.atInfo().setMessage("test json: {}").addArgument(result).log();
+
         JSONAssert.assertEquals("{'@context': 'https://www.w3.org/ns/activitystreams'}", result, false);
         JSONAssert.assertEquals("{'type': 'Object'}", result, false);
         JSONAssert.assertEquals("{'id': '" + TEST_ID + "'}", result, false);
         JSONAssert.assertEquals("{'name': '" + TEST_NAME + "'}", result, false);
-
-        log.atInfo().setMessage("test json: {}").addArgument(result).log();
     }
 
     @Test
-    void testFromJson() throws Exception {
-        JsonDocument document = JsonDocument.of(getClass().getClassLoader().getResourceAsStream("test/core-ex8-jsonld.json"));
-        assertNotNull(document);
-        assertFalse(document.getJsonContent().isEmpty());
-        JsonObject object = document.getJsonContent().get().asJsonObject();
-        assertNotNull(object);
-        final var result = ASObject.fromJsonObject(object);
-        assertFalse(result.isEmpty());
-        var testObject = result.get();
+    void testWithNameMap() throws Exception {
+        var result = ASObject.builder()
+                .withId(URI.create(TEST_ID))
+                .withName(NaturalValue.builder()
+                        .withValue("en", TEST_NAME)
+                        .withValue("es", TEST_NAME_ES)
+                        .build())
+                .build().toJson();
+
+        assertNotNull(result);
+        log.atInfo().setMessage("test json: {}").addArgument(result).log();
+
+        JSONAssert.assertEquals("{'id': '" + TEST_ID + "'}", result, false);
+        JSONAssert.assertEquals("{'nameMap': {'en': '" + TEST_NAME + "', 'es': '" + TEST_NAME_ES + "'}}", result, false);
+    }
+
+    @Test
+    void testNameMap() throws Exception {
+        var testObject = getAsObject("test/core-ex8-jsonld.json");
 
         assertTrue(testObject.getName().hasMultipleLanguages());
         assertEquals("This is the title", testObject.getName().getValue("en"));
@@ -86,4 +97,30 @@ class ASObjectTest {
         log.atInfo().setMessage("test Object: {}").addArgument(testObject).log();
     }
 
+    @Test
+    void testUndefinedNameMap() throws Exception {
+        var testObject = getAsObject("test/core-ex11b-jsonld.json");
+
+        assertFalse(testObject.getName().hasMultipleLanguages());
+        assertEquals("This is the title", testObject.getName().getValue(NaturalValue.UNDEFINED));
+        assertEquals("This is the title", testObject.getName().getValue());
+    }
+
+    @Test
+    void testLanguageInContext() throws Exception {
+        var testObject = getAsObject("test/core-ex11c-jsonld.json");
+
+        assertFalse(testObject.getName().hasMultipleLanguages());
+        assertEquals("This is the title", testObject.getName().getValue("en"));
+    }
+
+    private ASObject getAsObject(String name) throws JsonLdError {
+        var jsonObject = JsonTestUtil.getJsonObject(name);
+        assertNotNull(jsonObject);
+        assertFalse(jsonObject.isEmpty());
+        var result = ASObject.fromJsonObject(jsonObject);
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        return result.get();
+    }
 }

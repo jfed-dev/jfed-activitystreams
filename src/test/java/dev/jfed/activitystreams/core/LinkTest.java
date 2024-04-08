@@ -1,16 +1,18 @@
-// Copyright 2022-2024 Guillermo Castro
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2022-2024 Guillermo Castro
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package dev.jfed.activitystreams.core;
 
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URI;
 import java.util.Optional;
 
+import dev.jfed.activitystreams.JsonTestUtil;
 import dev.jfed.activitystreams.NaturalValue;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -43,7 +46,7 @@ class LinkTest {
     private static final int TEST_WIDTH = 600;
 
     @Test
-    public void testMinimal() throws Exception {
+    void testMinimal() throws Exception {
         Link link = new Link.LinkBuilder(URI.create(TEST_HREF)).build();
         String result = link.toJson();
 
@@ -54,7 +57,7 @@ class LinkTest {
     }
 
     @Test
-    public void testAllProperties() throws Exception {
+    void testAllProperties() throws Exception {
         Link link = new Link.LinkBuilder(URI.create(TEST_HREF))
             .rel(TEST_REL)
             .mediaType(TEST_MEDIA_TYPE)
@@ -80,14 +83,11 @@ class LinkTest {
     }
 
     @Test
-    public void testFromJson() throws Exception {
+    void testFromJson() throws Exception {
 
-        JsonDocument document = JsonDocument.of(getClass().getClassLoader().getResourceAsStream("test/vocabulary-ex2-jsonld.json"));
-        assertNotNull(document);
-        assertFalse(document.getJsonContent().isEmpty());
-        JsonObject object = document.getJsonContent().get().asJsonObject();
-        assertNotNull(object);
-        Optional<Link> result = Link.fromJsonObject(object);
+        JsonObject jsonObject = JsonTestUtil.getJsonObject("test/vocabulary-ex2-jsonld.json");
+        assertNotNull(jsonObject);
+        Optional<Link> result = Link.fromJsonObject(jsonObject);
         assertFalse(result.isEmpty());
         Link testLink = result.get();
         assertEquals("http://example.org/abc", testLink.getHref().toString());

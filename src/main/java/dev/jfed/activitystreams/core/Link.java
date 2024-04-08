@@ -189,28 +189,35 @@ public class Link extends ASType {
     }
 
     private static void processEntry(final LinkBuilder builder, final Map.Entry<String, JsonValue> property) {
-        String value = ((JsonString)property.getValue()).getString();
+        var value = property.getValue();
         switch(property.getKey()) {
             case Keywords.CONTEXT, Keywords.TYPE, ASProperties.TYPE, ASProperties.HREF:
                 // ignore
                 break;
             case ASProperties.NAME:
-                builder.name(NaturalValue.builder().withValue(value).build());
+                final var name = ((JsonString)value).getString();
+                builder.name(NaturalValue.builder().withValue(name).build());
+                break;
+            case ASProperties.NAME_MAP:
+                final var valueBuilder = NaturalValue.builder();
+                property.getValue().asJsonObject()
+                        .forEach((k, v) -> valueBuilder.withValue(k, ((JsonString)v).getString()));
+                builder.name(valueBuilder.build());
                 break;
             case ASProperties.REL:
-                builder.rel(value);
+                builder.rel(((JsonString)value).getString());
                 break;
             case ASProperties.MEDIA_TYPE: 
-                builder.mediaType(value); 
+                builder.mediaType(((JsonString)value).getString());
                 break;
             case ASProperties.HREFLANG:
-                builder.hreflang(value);
+                builder.hreflang(((JsonString)value).getString());
                 break;
             case ASProperties.HEIGHT:
-                builder.height(Integer.parseInt(value));
+                builder.height(Integer.parseInt(((JsonString)value).getString()));
                 break;
             case ASProperties.WIDTH:
-                builder.width(Integer.parseInt(value));
+                builder.width(Integer.parseInt(((JsonString)value).getString()));
                 break;
             default:
                 log.atWarn().setMessage("Property not found: key={}, value={}").addArgument(property.getKey()).addArgument(property.getValue()).log();
