@@ -31,12 +31,12 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Run Maven
-        run: mvn -V -B clean verify -f pom.xml
+        run: ./mvnw -V -B clean verify -f pom.xml
       - name: Sonar Coverage Reporter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -V -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: ./mvnw -V -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
