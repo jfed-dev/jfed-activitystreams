@@ -20,8 +20,9 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Map;
 
+import com.apicatalog.jsonld.http.media.MediaType;
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
+import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
@@ -34,6 +35,7 @@ import jakarta.json.stream.JsonGenerator;
  */
 public abstract class ASType {
     public static final String CONTEXT_VALUE = "https://www.w3.org/ns/activitystreams";
+    public static final MediaType AS_MEDIA_TYPE = MediaType.of("application", "activity+json");
     protected URI id;
     protected NaturalValue name;
     private final JsonWriterFactory writerFactory;
@@ -98,12 +100,12 @@ public abstract class ASType {
         return writeJsonObject(toJsonObject());
     }
 
-    public abstract JsonObject toJsonObject();
+    public abstract JsonStructure toJsonObject();
 
-    protected String writeJsonObject(JsonObject object) {
+    protected String writeJsonObject(JsonStructure value) {
         var strWriter = new StringWriter();
         try (var writer = writerFactory.createWriter(strWriter)) {
-            writer.writeObject(object);
+            writer.writeObject(value.asJsonObject());
         }
         return strWriter.toString();
     }

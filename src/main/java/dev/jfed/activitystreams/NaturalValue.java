@@ -42,7 +42,7 @@ public class NaturalValue {
     }
 
     public static class NaturalValueBuilder {
-        private NaturalValue value;
+        private final NaturalValue value;
 
         private NaturalValueBuilder(Locale locale) {
             value = new NaturalValue(locale);
@@ -92,12 +92,12 @@ public class NaturalValue {
         valueMap.put(locale, text);
     }
 
-    public Locale getLocale() {
-        return locale;
+    public String getLanguage() {
+        return Locale.ROOT.equals(locale) ? "und" : locale.getLanguage();
     }
 
-    public boolean hasValueForLanguage(Locale locale) {
-        return valueMap.containsKey(locale);
+    public boolean hasValueForLanguage(String language) {
+        return valueMap.containsKey(UNDEFINED.equalsIgnoreCase(language) ? Locale.ROOT : Locale.forLanguageTag(language));
     }
 
     public boolean hasMultipleLanguages() {

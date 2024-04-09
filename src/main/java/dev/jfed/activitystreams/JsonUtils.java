@@ -17,10 +17,12 @@
 package dev.jfed.activitystreams;
 
 import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
+import org.javatuples.Pair;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Guillermo Castro
@@ -29,18 +31,21 @@ import java.util.Map;
 public class JsonUtils {
     private JsonUtils() {}
 
-    public static void mapNameToJsonObject(final JsonObjectBuilder parent, final NaturalValue name) {
+    public static Optional<Pair<String, JsonValue>> mapNameToJsonValue(final NaturalValue name) {
         if (name != null) {
+            final Pair<String, JsonValue> response;
             if (name.hasMultipleLanguages()) {
                 final var builder = Json.createObjectBuilder();
                 for (Map.Entry<Locale, String> entry : name.getAllValues()) {
                     builder.add(entry.getKey().getLanguage(), entry.getValue());
                 }
-                parent.add(ASProperties.NAME_MAP, builder);
+                response = Pair.with(ASProperties.NAME_MAP, builder.build());
             } else {
-                parent.add(ASProperties.NAME, name.getValue());
+                response = Pair.with(ASProperties.NAME, Json.createValue(name.getValue()));
             }
+            return Optional.of(response);
         }
+        return Optional.empty();
     }
 
 }

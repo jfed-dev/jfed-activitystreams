@@ -19,11 +19,11 @@ package dev.jfed.activitystreams.core;
 import com.apicatalog.jsonld.lang.Keywords;
 import dev.jfed.activitystreams.ASProperties;
 import dev.jfed.activitystreams.ASType;
-import dev.jfed.activitystreams.JsonUtils;
 import dev.jfed.activitystreams.NaturalValue;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
+
+import static dev.jfed.activitystreams.JsonUtils.mapNameToJsonValue;
 
 /**
  * @author Guillermo Castro
@@ -84,13 +86,13 @@ public class ASObject extends ASType {
     }
 
     @Override
-    public JsonObject toJsonObject() {
+    public JsonStructure toJsonObject() {
         final var builder = Json.createObjectBuilder()
                 .add(Keywords.CONTEXT, CONTEXT_VALUE);
         Optional.ofNullable(id).ifPresent(i -> builder.add(ASProperties.ID, i.toString()));
         builder.add(ASProperties.TYPE, getType());
 
-        JsonUtils.mapNameToJsonObject(builder, name);
+        mapNameToJsonValue(name).ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
 
         return builder.build();
     }

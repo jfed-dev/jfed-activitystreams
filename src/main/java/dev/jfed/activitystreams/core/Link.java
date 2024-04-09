@@ -20,10 +20,10 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-import dev.jfed.activitystreams.JsonUtils;
 import dev.jfed.activitystreams.NaturalValue;
 import dev.jfed.activitystreams.ASProperties;
 import dev.jfed.activitystreams.ASType;
+import jakarta.json.JsonStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +33,8 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+
+import static dev.jfed.activitystreams.JsonUtils.mapNameToJsonValue;
 
 public class Link extends ASType {
     private static final Logger log = LoggerFactory.getLogger(Link.class);
@@ -160,12 +162,12 @@ public class Link extends ASType {
     }
 
     @Override
-    public JsonObject toJsonObject() {
+    public JsonStructure toJsonObject() {
         final var builder = Json.createObjectBuilder()
             .add(Keywords.CONTEXT, CONTEXT_VALUE)
             .add(ASProperties.TYPE, getType())
             .add(ASProperties.HREF, href.toString());
-        JsonUtils.mapNameToJsonObject(builder, name);
+        mapNameToJsonValue(name).ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
 
         Optional.ofNullable(rel).ifPresent(r -> builder.add(ASProperties.REL, r));
         Optional.ofNullable(mediaType).ifPresent(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
