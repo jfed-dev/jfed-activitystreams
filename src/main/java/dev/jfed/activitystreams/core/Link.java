@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.apicatalog.jsonld.lang.Keywords;
 
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 
@@ -193,17 +192,6 @@ public class Link extends ASType {
         } else {
             return Optional.empty();
         }
-    }
-
-    public static Optional<Link> fromJsonObject(final JsonObject jsonObject) {
-        if (jsonObject == null || !jsonObject.containsKey(ASProperties.HREF)) {
-            return Optional.empty();
-        }
-        LinkBuilder builder = new Link.LinkBuilder(URI.create(jsonObject.getString(ASProperties.HREF)));
-
-        jsonObject.entrySet().forEach(entry -> processEntry(builder, entry));
-
-        return Optional.of(builder.build());
     }
 
     private static void processEntry(final LinkBuilder builder, final Map.Entry<String, JsonValue> property) {
