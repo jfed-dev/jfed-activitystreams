@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Guillermo Castro
+ * Copyright 2022-2024 Guillermo Castro
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import dev.jfed.activitystreams.ASProperties;
 import dev.jfed.activitystreams.ASType;
 import dev.jfed.activitystreams.NaturalValue;
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
@@ -31,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
-
-import static dev.jfed.activitystreams.JsonUtils.mapNameToJsonValue;
 
 /**
  * @author Guillermo Castro
@@ -78,11 +75,15 @@ public class ASObject extends ASType {
         }
     }
 
-    public static Optional<ASObject> fromJsonObject(final JsonObject jsonObject) {
-        ASObjectBuilder builder = ASObject.builder();
-        jsonObject.entrySet().forEach(entry -> processEntry(builder, entry));
+    public static Optional<ASObject> fromJson(String json) {
+        final var optObj = fromJsonToObject(json);
+        if (optObj.isPresent()) {
+            ASObjectBuilder builder = ASObject.builder();
+            optObj.get().entrySet().forEach(entry -> processEntry(builder, entry));
 
-        return Optional.of(builder.build());
+            return Optional.of(builder.build());
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -92,7 +93,7 @@ public class ASObject extends ASType {
         Optional.ofNullable(id).ifPresent(i -> builder.add(ASProperties.ID, i.toString()));
         builder.add(ASProperties.TYPE, getType());
 
-        mapNameToJsonValue(name).ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
+        mapNameToJsonValue().ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
 
         return builder.build();
     }

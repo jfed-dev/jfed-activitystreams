@@ -16,15 +16,28 @@
 
 package dev.jfed.activitystreams;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
 import com.apicatalog.jsonld.http.media.MediaType;
+import com.apicatalog.jsonld.lang.Keywords;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ASType is the base abstract class for all Activity Stream object types. 
@@ -34,7 +47,11 @@ import jakarta.json.stream.JsonGenerator;
  * @since 0.0.1
  */
 public abstract class ASType {
+    private static final Logger log = LoggerFactory.getLogger(ASType.class);
+
     public static final String CONTEXT_VALUE = "https://www.w3.org/ns/activitystreams";
+    private static final Document CONTEXT = JsonDocument
+            .of(Json.createObjectBuilder().add(Keywords.CONTEXT, ASType.CONTEXT_VALUE).build());
     public static final MediaType AS_MEDIA_TYPE = MediaType.of("application", "activity+json");
     protected URI id;
     protected NaturalValue name;
@@ -97,16 +114,49 @@ public abstract class ASType {
      * @return Object in JSON format
      */
     public String toJson() {
-        return writeJsonObject(toJsonObject());
+        var strWriter = new StringWriter();
+        try (var writer = writerFactory.createWriter(strWriter)) {
+            writer.writeObject(toJsonObject().asJsonObject());
+        }
+        final var str = strWriter.toString();
+        log.atTrace().setMessage("Converted to json: {}")
+                .addKeyValue("Id", getId())
+                .addKeyValue("Type", getType())
+                .addArgument(str)
+                .log();
+        return str;
+
+    }
+
+    public Optional<Pair<String, JsonValue>> mapNameToJsonValue() {
+        if (name != null) {
+            final Pair<String, JsonValue> response;
+            if (name.hasMultipleLanguages()) {
+                final var builder = Json.createObjectBuilder();
+                for (Map.Entry<Locale, String> entry : name.getAllValues()) {
+                    builder.add(entry.getKey().getLanguage(), entry.getValue());
+                }
+                response = Pair.with(ASProperties.NAME_MAP, builder.build());
+            } else {
+                response = Pair.with(ASProperties.NAME, Json.createValue(name.getValue()));
+            }
+            return Optional.of(response);
+        }
+        return Optional.empty();
     }
 
     public abstract JsonStructure toJsonObject();
 
-    protected String writeJsonObject(JsonStructure value) {
-        var strWriter = new StringWriter();
-        try (var writer = writerFactory.createWriter(strWriter)) {
-            writer.writeObject(value.asJsonObject());
+    protected static Optional<JsonObject> fromJsonToObject(final String json) {
+        try {
+            final var document = JsonDocument.of(ASType.AS_MEDIA_TYPE, new StringReader(json));
+            if (document.getJsonContent().isPresent()) {
+                return Optional.of(JsonLd.compact(document, CONTEXT).get());
+            }
+        } catch (JsonLdError e) {
+            return Optional.empty();
         }
-        return strWriter.toString();
+        return Optional.empty();
     }
+
 }

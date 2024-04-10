@@ -18,7 +18,6 @@ package dev.jfed.activitystreams;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -35,10 +34,6 @@ public class NaturalValue {
 
     public static NaturalValueBuilder builder() {
         return new NaturalValueBuilder(Locale.ROOT);
-    }
-
-    public static NaturalValueBuilder builder(Locale locale) {
-        return new NaturalValueBuilder(Objects.requireNonNull(locale));
     }
 
     public static class NaturalValueBuilder {
@@ -110,6 +105,6 @@ public class NaturalValue {
 
     @Override
     public String toString() {
-        return "[NaturalValue: " + valueMap + "]";
+        return valueMap.get(locale);
     }
 }

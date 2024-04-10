@@ -16,16 +16,9 @@
 
 package dev.jfed.activitystreams;
 
-import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.JsonLdError;
-import com.apicatalog.jsonld.document.JsonDocument;
-import com.apicatalog.jsonld.http.media.MediaType;
-import jakarta.json.JsonObject;
-
-import java.net.URI;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 /**
  * @author Guillermo Castro
@@ -34,13 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class JsonTestUtil {
     private JsonTestUtil() {}
 
-    public static JsonObject getJsonObject(String name) throws JsonLdError {
-        var document = JsonDocument.of(MediaType.of("application", "activity+json"), JsonTestUtil.class.getClassLoader().getResourceAsStream(name));
-        assertNotNull(document);
-        assertFalse(document.getJsonContent().isEmpty());
-        var object = JsonLd.compact(document, URI.create(ASType.CONTEXT_VALUE)).get();
-        assertNotNull(object);
-        return object;
+    public static String getJsonFromFile(String filename) throws Exception {
+        try (var lines = Files
+                .lines(Paths
+                        .get(JsonTestUtil.class.getClassLoader().getResource(filename).toURI()))) {
+            return lines.collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
 }

@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
-import java.util.Optional;
 
 import dev.jfed.activitystreams.JsonTestUtil;
 import dev.jfed.activitystreams.NaturalValue;
@@ -29,10 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.apicatalog.jsonld.document.JsonDocument;
-
-import jakarta.json.JsonObject;
 
 class LinkTest {
     private static final Logger log = LoggerFactory.getLogger(LinkTest.class);
@@ -49,11 +44,18 @@ class LinkTest {
     void testMinimal() throws Exception {
         Link link = new Link.LinkBuilder(URI.create(TEST_HREF)).build();
         String result = link.toJson();
+        log.atDebug().setMessage("Test json: {}").addArgument(result).log();
 
         assertNotNull(result);
-        JSONAssert.assertEquals("{'@context': 'https://www.w3.org/ns/activitystreams'}", result, false);
-        JSONAssert.assertEquals("{'type': 'Link'}", result, false);
-        JSONAssert.assertEquals("{'href':'" + TEST_HREF + "'}", result, false);
+        JSONAssert.assertEquals("""
+                {
+                    "@context": "https://www.w3.org/ns/activitystreams",
+                    "type": "Link",
+                    "href": "https://example.org/abc.png"
+                }
+                """,
+                result,
+                true);
     }
 
     @Test
@@ -67,34 +69,53 @@ class LinkTest {
             .width(TEST_WIDTH)
             .build();
         String result = link.toJson();
-        
-        assertNotNull(result);
-        JSONAssert.assertEquals("{'@context': 'https://www.w3.org/ns/activitystreams'}", result, false);
-        JSONAssert.assertEquals("{'type': 'Link'}", result, false);
-        JSONAssert.assertEquals("{'href':'" + TEST_HREF + "'}", result, false);
-        JSONAssert.assertEquals("{rel: \"canonical\"}", result, false);
-        JSONAssert.assertEquals("{'mediaType': '" + TEST_MEDIA_TYPE + "'}", result, false);
-        JSONAssert.assertEquals("{'name': '" + TEST_NAME + "'}", result, false);
-        JSONAssert.assertEquals("{'hreflang': '" + TEST_HREFLANG + "'}", result, false);
-        JSONAssert.assertEquals("{'height': " + TEST_HEIGHT + "}", result, false);
-        JSONAssert.assertEquals("{'width': " + TEST_WIDTH + "}", result, false);
+        log.atDebug().setMessage("Test json: {}").addArgument(result).log();
 
-        log.atInfo().setMessage("test json: {}").addArgument(result).log();
+        assertNotNull(result);
+        JSONAssert.assertEquals("""
+                {
+                    "@context": "https://www.w3.org/ns/activitystreams",
+                    "type": "Link",
+                    "href": "https://example.org/abc.png",
+                    "name": "Image Link",
+                    "rel": "canonical",
+                    "mediaType": "image/png",
+                    "hreflang": "en",
+                    "height": 900,
+                    "width": 600
+                }
+                """,
+                result,
+                true);
     }
 
     @Test
-    void testFromJson() throws Exception {
-
-        JsonObject jsonObject = JsonTestUtil.getJsonObject("test/vocabulary-ex2-jsonld.json");
-        assertNotNull(jsonObject);
-        Optional<Link> result = Link.fromJsonObject(jsonObject);
-        assertFalse(result.isEmpty());
-        Link testLink = result.get();
+    void testVocEx2() throws Exception {
+        Link testLink = getLink("test/vocabulary-ex2-jsonld.json");
         assertEquals("http://example.org/abc", testLink.getHref().toString());
         assertEquals("An example link", testLink.getName().getValue());
         assertEquals("text/html", testLink.getMediaType());
         assertEquals("en", testLink.getHreflang());
 
-        log.atInfo().setMessage("test Link: {}").addArgument(testLink).log();
+        log.atDebug().setMessage("test Link: {}").addArgument(testLink).log();
+    }
+
+    @Test
+    void testVocEx136() throws Exception {
+        Link testLink = getLink("test/vocabulary-ex136-jsonld.json");
+        assertEquals("http://example.org/image.png", testLink.getHref().toString());
+        assertEquals(100, testLink.getHeight());
+        assertEquals(100, testLink.getWidth());
+    }
+
+    private Link getLink(String name) throws Exception {
+        var jsonString = JsonTestUtil.getJsonFromFile(name);
+        assertNotNull(jsonString);
+        assertFalse(jsonString.isEmpty());
+
+        final var result = Link.fromJson(jsonString);
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        return result.get();
     }
 }

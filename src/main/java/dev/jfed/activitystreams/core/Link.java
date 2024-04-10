@@ -23,6 +23,7 @@ import java.util.Optional;
 import dev.jfed.activitystreams.NaturalValue;
 import dev.jfed.activitystreams.ASProperties;
 import dev.jfed.activitystreams.ASType;
+import jakarta.json.JsonNumber;
 import jakarta.json.JsonStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
-
-import static dev.jfed.activitystreams.JsonUtils.mapNameToJsonValue;
 
 public class Link extends ASType {
     private static final Logger log = LoggerFactory.getLogger(Link.class);
@@ -167,7 +166,7 @@ public class Link extends ASType {
             .add(Keywords.CONTEXT, CONTEXT_VALUE)
             .add(ASProperties.TYPE, getType())
             .add(ASProperties.HREF, href.toString());
-        mapNameToJsonValue(name).ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
+        mapNameToJsonValue().ifPresent(objects -> builder.add(objects.getValue0(), objects.getValue1()));
 
         Optional.ofNullable(rel).ifPresent(r -> builder.add(ASProperties.REL, r));
         Optional.ofNullable(mediaType).ifPresent(mt -> builder.add(ASProperties.MEDIA_TYPE, mt));
@@ -177,6 +176,23 @@ public class Link extends ASType {
         Optional.ofNullable(preview).ifPresent(p -> builder.add(ASProperties.PREVIEW, p.toJsonObject()));
         
         return builder.build();
+    }
+
+    public static Optional<Link> fromJson(final String json) {
+        final var optObj = fromJsonToObject(json);
+        if (optObj.isPresent()) {
+            final var jsonObject = optObj.get();
+            if (!jsonObject.containsKey(ASProperties.HREF)) {
+                return Optional.empty();
+            }
+            LinkBuilder builder = new Link.LinkBuilder(URI.create(jsonObject.getString(ASProperties.HREF)));
+
+            jsonObject.entrySet().forEach(entry -> processEntry(builder, entry));
+
+            return Optional.of(builder.build());
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static Optional<Link> fromJsonObject(final JsonObject jsonObject) {
@@ -216,10 +232,10 @@ public class Link extends ASType {
                 builder.hreflang(((JsonString)value).getString());
                 break;
             case ASProperties.HEIGHT:
-                builder.height(Integer.parseInt(((JsonString)value).getString()));
+                builder.height(((JsonNumber)value).intValue());
                 break;
             case ASProperties.WIDTH:
-                builder.width(Integer.parseInt(((JsonString)value).getString()));
+                builder.width(((JsonNumber)value).intValue());
                 break;
             default:
                 log.atWarn().setMessage("Property not found: key={}, value={}").addArgument(property.getKey()).addArgument(property.getValue()).log();
